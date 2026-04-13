@@ -2,187 +2,115 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Stop The Fall X</title>
+<title>Pause Challenge</title>
 <style>
-  body {
-    margin: 0;
-    overflow: hidden;
-    font-family: Arial;
-    color: white;
-    text-align: center;
-    background: linear-gradient(#87CEEB, #000); /* uçurum efekti */
-  }
+body {
+  margin:0;
+  overflow:hidden;
+  background: linear-gradient(#87CEEB, #c2b280);
+}
 
-  #game {
-    position: relative;
-    width: 100vw;
-    height: 100vh;
-  }
+#car {
+  position:absolute;
+  font-size:50px;
+}
 
-  #object {
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-    font-size: 50px;
-  }
+#target {
+  position:absolute;
+  border:3px solid lime;
+  width:120px;
+  height:80px;
+}
 
-  #target {
-    position: absolute;
-    width: 100%;
-    height: 6px;
-    background: lime;
-  }
-
-  #ui {
-    position: absolute;
-    top: 10px;
-    width: 100%;
-    font-size: 18px;
-  }
-
-  #centerText {
-    position: absolute;
-    top: 50%;
-    width: 100%;
-    transform: translateY(-50%);
-    font-size: 28px;
-  }
-
-  #menu {
-    position: absolute;
-    bottom: 20px;
-    width: 100%;
-  }
-
-  button {
-    padding: 10px 20px;
-    margin: 5px;
-    font-size: 16px;
-    border: none;
-    border-radius: 10px;
-    background: orange;
-    color: black;
-  }
+#text {
+  position:absolute;
+  top:20px;
+  width:100%;
+  text-align:center;
+  font-size:24px;
+  color:white;
+}
 </style>
 </head>
 
 <body>
 
-<div id="game">
-
-  <div id="ui">
-    Level: <span id="level">1</span> |
-    Score: <span id="score">0</span>
-  </div>
-
-  <div id="centerText">Tap to Start</div>
-
-  <div id="object">🚗</div>
-  <div id="target"></div>
-
-  <div id="menu">
-    <button onclick="setObject('🚗')">Car</button>
-    <button onclick="setObject('✈️')">Plane</button>
-    <button onclick="setObject('⚽')">Ball</button>
-  </div>
-
-</div>
+<div id="text">Tap to pause!</div>
+<div id="car">🚗</div>
+<div id="target"></div>
 
 <script>
-let obj = document.getElementById("object");
+let car = document.getElementById("car");
 let target = document.getElementById("target");
-let levelText = document.getElementById("level");
-let scoreText = document.getElementById("score");
-let centerText = document.getElementById("centerText");
+let text = document.getElementById("text");
 
-let pos = 0;
-let speed = 3;
-let falling = false;
+let x = -100;
+let y = 200;
+let vx = 6;
+let vy = -10;
+let gravity = 0.5;
 
-let level = 1;
-let score = 0;
-let combo = 0;
-let targetY;
+let running = true;
 
-function setObject(type) {
-  obj.innerText = type;
+// hedef random
+let targetX = Math.random() * (window.innerWidth - 150) + 50;
+let targetY = Math.random() * 200 + 100;
+
+target.style.left = targetX + "px";
+target.style.top = targetY + "px";
+
+function loop() {
+  if (running) {
+    x += vx;
+    y += vy;
+    vy += gravity;
+
+    car.style.left = x + "px";
+    car.style.top = y + "px";
+  }
+  requestAnimationFrame(loop);
 }
 
-function newTarget() {
-  targetY = Math.random() * (window.innerHeight - 150);
+function pauseGame() {
+  if (!running) return;
+
+  running = false;
+
+  let carRect = car.getBoundingClientRect();
+  let targetRect = target.getBoundingClientRect();
+
+  if (
+    carRect.left > targetRect.left &&
+    carRect.right < targetRect.right &&
+    carRect.top > targetRect.top &&
+    carRect.bottom < targetRect.bottom
+  ) {
+    text.innerText = "PERFECT 🔥";
+  } else {
+    text.innerText = "FAIL ❌";
+  }
+
+  setTimeout(reset, 1200);
+}
+
+function reset() {
+  x = -100;
+  y = 200;
+  vx = 6 + Math.random()*2;
+  vy = -10;
+  running = true;
+  text.innerText = "Tap to pause!";
+
+  targetX = Math.random() * (window.innerWidth - 150) + 50;
+  targetY = Math.random() * 200 + 100;
+
+  target.style.left = targetX + "px";
   target.style.top = targetY + "px";
 }
 
-function startGame() {
-  if (falling) return;
-  falling = true;
-  centerText.innerText = "";
-}
+document.addEventListener("click", pauseGame);
 
-function stopGame() {
-  if (!falling) {
-    startGame();
-    return;
-  }
-
-  falling = false;
-
-  let diff = Math.abs(pos - targetY);
-  let result;
-
-  if (diff < 10) {
-    result = "PERFECT 🔥";
-    score += 10 + combo * 2;
-    combo++;
-  } else if (diff < 30) {
-    result = "GOOD 👍";
-    score += 5;
-    combo = 0;
-  } else {
-    result = "MISS ❌";
-    combo = 0;
-  }
-
-  centerText.innerText = result;
-  scoreText.innerText = score;
-
-  if (result !== "MISS ❌") {
-    level++;
-    speed += 0.5;
-  }
-
-  levelText.innerText = level;
-
-  setTimeout(resetRound, 800);
-}
-
-function resetRound() {
-  pos = 0;
-  obj.style.top = "0px";
-  newTarget();
-  falling = true;
-  centerText.innerText = "";
-}
-
-function gameLoop() {
-  if (falling) {
-    pos += speed;
-    obj.style.top = pos + "px";
-
-    if (pos > window.innerHeight) {
-      centerText.innerText = "FELL 💀";
-      combo = 0;
-      falling = false;
-      setTimeout(resetRound, 1000);
-    }
-  }
-  requestAnimationFrame(gameLoop);
-}
-
-document.addEventListener("click", stopGame);
-
-newTarget();
-gameLoop();
+loop();
 </script>
 
 </body>
