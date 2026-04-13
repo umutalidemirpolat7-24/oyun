@@ -2,42 +2,44 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Stop The Fall PRO</title>
+<title>Stop The Fall X</title>
 <style>
   body {
     margin: 0;
-    background: #111;
     overflow: hidden;
     font-family: Arial;
     color: white;
     text-align: center;
+    background: linear-gradient(#87CEEB, #000); /* uçurum efekti */
   }
+
   #game {
     position: relative;
     width: 100vw;
     height: 100vh;
   }
-  #car {
+
+  #object {
     position: absolute;
     left: 50%;
     transform: translateX(-50%);
-    width: 60px;
-    height: 100px;
-    background: red;
-    border-radius: 10px;
+    font-size: 50px;
   }
+
   #target {
     position: absolute;
     width: 100%;
-    height: 5px;
+    height: 6px;
     background: lime;
   }
+
   #ui {
     position: absolute;
     top: 10px;
     width: 100%;
     font-size: 18px;
   }
+
   #centerText {
     position: absolute;
     top: 50%;
@@ -45,11 +47,29 @@
     transform: translateY(-50%);
     font-size: 28px;
   }
+
+  #menu {
+    position: absolute;
+    bottom: 20px;
+    width: 100%;
+  }
+
+  button {
+    padding: 10px 20px;
+    margin: 5px;
+    font-size: 16px;
+    border: none;
+    border-radius: 10px;
+    background: orange;
+    color: black;
+  }
 </style>
 </head>
+
 <body>
 
 <div id="game">
+
   <div id="ui">
     Level: <span id="level">1</span> |
     Score: <span id="score">0</span>
@@ -57,12 +77,19 @@
 
   <div id="centerText">Tap to Start</div>
 
-  <div id="car"></div>
+  <div id="object">🚗</div>
   <div id="target"></div>
+
+  <div id="menu">
+    <button onclick="setObject('🚗')">Car</button>
+    <button onclick="setObject('✈️')">Plane</button>
+    <button onclick="setObject('⚽')">Ball</button>
+  </div>
+
 </div>
 
 <script>
-let car = document.getElementById("car");
+let obj = document.getElementById("object");
 let target = document.getElementById("target");
 let levelText = document.getElementById("level");
 let scoreText = document.getElementById("score");
@@ -75,11 +102,14 @@ let falling = false;
 let level = 1;
 let score = 0;
 let combo = 0;
-
 let targetY;
 
+function setObject(type) {
+  obj.innerText = type;
+}
+
 function newTarget() {
-  targetY = Math.random() * (window.innerHeight - 100);
+  targetY = Math.random() * (window.innerHeight - 150);
   target.style.top = targetY + "px";
 }
 
@@ -98,7 +128,6 @@ function stopGame() {
   falling = false;
 
   let diff = Math.abs(pos - targetY);
-
   let result;
 
   if (diff < 10) {
@@ -115,7 +144,6 @@ function stopGame() {
   }
 
   centerText.innerText = result;
-
   scoreText.innerText = score;
 
   if (result !== "MISS ❌") {
@@ -130,6 +158,7 @@ function stopGame() {
 
 function resetRound() {
   pos = 0;
+  obj.style.top = "0px";
   newTarget();
   falling = true;
   centerText.innerText = "";
@@ -138,10 +167,10 @@ function resetRound() {
 function gameLoop() {
   if (falling) {
     pos += speed;
-    car.style.top = pos + "px";
+    obj.style.top = pos + "px";
 
     if (pos > window.innerHeight) {
-      centerText.innerText = "FAIL ❌";
+      centerText.innerText = "FELL 💀";
       combo = 0;
       falling = false;
       setTimeout(resetRound, 1000);
