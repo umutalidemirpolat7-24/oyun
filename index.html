@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Stop The Fall PRO</title>
+<style>
+  body {
+    margin: 0;
+    background: #111;
+    overflow: hidden;
+    font-family: Arial;
+    color: white;
+    text-align: center;
+  }
+  #game {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+  }
+  #car {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 100px;
+    background: red;
+    border-radius: 10px;
+  }
+  #target {
+    position: absolute;
+    width: 100%;
+    height: 5px;
+    background: lime;
+  }
+  #ui {
+    position: absolute;
+    top: 10px;
+    width: 100%;
+    font-size: 18px;
+  }
+  #centerText {
+    position: absolute;
+    top: 50%;
+    width: 100%;
+    transform: translateY(-50%);
+    font-size: 28px;
+  }
+</style>
+</head>
+<body>
+
+<div id="game">
+  <div id="ui">
+    Level: <span id="level">1</span> |
+    Score: <span id="score">0</span>
+  </div>
+
+  <div id="centerText">Tap to Start</div>
+
+  <div id="car"></div>
+  <div id="target"></div>
+</div>
+
+<script>
+let car = document.getElementById("car");
+let target = document.getElementById("target");
+let levelText = document.getElementById("level");
+let scoreText = document.getElementById("score");
+let centerText = document.getElementById("centerText");
+
+let pos = 0;
+let speed = 3;
+let falling = false;
+
+let level = 1;
+let score = 0;
+let combo = 0;
+
+let targetY;
+
+function newTarget() {
+  targetY = Math.random() * (window.innerHeight - 100);
+  target.style.top = targetY + "px";
+}
+
+function startGame() {
+  if (falling) return;
+  falling = true;
+  centerText.innerText = "";
+}
+
+function stopGame() {
+  if (!falling) {
+    startGame();
+    return;
+  }
+
+  falling = false;
+
+  let diff = Math.abs(pos - targetY);
+
+  let result;
+
+  if (diff < 10) {
+    result = "PERFECT 🔥";
+    score += 10 + combo * 2;
+    combo++;
+  } else if (diff < 30) {
+    result = "GOOD 👍";
+    score += 5;
+    combo = 0;
+  } else {
+    result = "MISS ❌";
+    combo = 0;
+  }
+
+  centerText.innerText = result;
+
+  scoreText.innerText = score;
+
+  if (result !== "MISS ❌") {
+    level++;
+    speed += 0.5;
+  }
+
+  levelText.innerText = level;
+
+  setTimeout(resetRound, 800);
+}
+
+function resetRound() {
+  pos = 0;
+  newTarget();
+  falling = true;
+  centerText.innerText = "";
+}
+
+function gameLoop() {
+  if (falling) {
+    pos += speed;
+    car.style.top = pos + "px";
+
+    if (pos > window.innerHeight) {
+      centerText.innerText = "FAIL ❌";
+      combo = 0;
+      falling = false;
+      setTimeout(resetRound, 1000);
+    }
+  }
+  requestAnimationFrame(gameLoop);
+}
+
+document.addEventListener("click", stopGame);
+
+newTarget();
+gameLoop();
+</script>
+
+</body>
+</html>
